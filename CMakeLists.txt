@@ -1,0 +1,10 @@
+cmake_minimum_required(VERSION 3.16)
+project(learncuda)
+
+set(CMAKE_CXX_STANDARD 17)
+find_package(CUDA REQUIRED)
+#cuda_add_executable(learncuda main.cu)
+include_directories(include)
+#add_subdirectory(Reduction)
+#add_subdirectory(DynamicParallel)
+add_subdirectory(Memory)
