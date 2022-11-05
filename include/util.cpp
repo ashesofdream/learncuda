@@ -1,8 +1,6 @@
-//
-// Created by zzq on 22-10-27.
-//
 #include <random>
 #include <iostream>
+#include <cstdlib>
 using namespace std;
 #include "util.h"
 std::random_device rd;
@@ -25,3 +23,4 @@ void util::print_matrix(int *array, int m, int n){
     }
     cout<<endl;
 }
+

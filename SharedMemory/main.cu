@@ -100,18 +100,53 @@ void test_rect(){
             // cudaMemcpy(out_host, out_dev, array_bytes, cudaMemcpyDeviceToHost);
     // util::print_matrix(out_host, 32, 16);
 }
+__global__ void transpose_naive(int *out, int *in, const int nx, const int ny) {
+ // matrix coordinate (ix,iy)
+ unsigned int ix = blockIdx.x * blockDim.x + threadIdx.x;
+ unsigned int iy = blockIdx.y * blockDim.y + threadIdx.y;
+ // transpose with boundary test
+ if (ix < nx && iy < ny) {
+ out[ix*ny+iy]= in[iy*nx+ix];
+ }
+}
 
+__global__ void transpose_with_share(int* in ,int *out , int m , int n){
+    __shared__ int trans_cache[32][32];
+    int i_x = blockDim.x * blockIdx.x + threadIdx.x;
+    int i_y = blockDim.y * blockIdx.y + threadIdx.y;
+    if(i_x >= m || i_y >=n) return;
+    int g_idx = i_y * m + i_x;
+
+    int bidx = threadIdx.y * blockDim.x + threadIdx.x;
+    int b_row = bidx / blockDim.y;
+    int b_col = bidx % blockDim.y;
+
+    int o_x = blockIdx.y * blockDim.y + b_col;
+    int o_y = blockIdx.x * blockDim.x + b_row;
+
+    int o_idx = o_y * n + o_x;
+    trans_cache[threadIdx.y][threadIdx.x] =  in[g_idx];
+    __syncthreads();
+    out[o_idx] = trans_cache[b_col][b_row] ;
+}
 __global__ void transpose_with_share_pad(int* in ,int *out , int m , int n){
     __shared__ int trans_cache[32][33];
     int i_x = blockDim.x * blockIdx.x + threadIdx.x;
     int i_y = blockDim.y * blockIdx.y + threadIdx.y;
-    // if(i_x >= m || i_y >=n) return;
+    if(i_x >= m || i_y >=n) return;
     int g_idx = i_y * m + i_x;
 
-    int o_idx = i_x * m + i_y;
+    int bidx = threadIdx.y * blockDim.x + threadIdx.x;
+    int b_row = bidx / blockDim.y;
+    int b_col = bidx % blockDim.y;
+
+    int o_x = blockIdx.y * blockDim.y + b_col;
+    int o_y = blockIdx.x * blockDim.x + b_row;
+
+    int o_idx = o_y * n + o_x;
     trans_cache[threadIdx.y][threadIdx.x] =  in[g_idx];
     __syncthreads();
-    out[o_idx] = trans_cache[threadIdx.x][threadIdx.y] ;
+    out[o_idx] = trans_cache[b_col][b_row] ;
 }
 
 void test_transpose(){
@@ -127,18 +162,22 @@ void test_transpose(){
     
     util::init_array_int(in_host, array_size);
     cudaMemcpy(in_dev, in_host, array_bytes, cudaMemcpyHostToDevice);
-    
+    transpose_naive<<<grid_dim,block_dim>>>(out_dev,in_dev,m,n);
+    cudaDeviceSynchronize();
     transpose_with_share_pad<<<grid_dim,block_dim>>>(in_dev, out_dev, m, n);
-
+    cudaDeviceSynchronize();
+    transpose_with_share<<<grid_dim,block_dim>>>(out_dev,in_dev,m,n);
+    cudaDeviceSynchronize();
+    
     cudaMemcpy(out_host, out_dev, array_bytes, cudaMemcpyDeviceToHost);
 
-    std::cout<<"origin matirx:"<<std::endl;
-    util::print_matrix(in_host, 3, 3);
-    std::cout<<"trans matrix:" <<std::endl;
-    util::print_matrix(out_host,3, 3);
+    // std::cout<<"origin matirx:"<<std::endl;
+    // util::print_matrix(in_host, 2, n);
+    // std::cout<<"trans matrix:" <<std::endl;
+    // util::print_matrix(out_host,2, n);
 }
 
-int main(){
+int main (){
     //test_row_and_col();
     // test_rect();
     test_transpose();

@@ -167,7 +167,7 @@ void transform_matrix(){
     // cudaMemcpy(output_data, output_matrix_dev, array_bytes, cudaMemcpyDeviceToHost);
     // util::print_matrix(output_data,width,height);
     // cout<<endl;
-
+    
     
 }
 
