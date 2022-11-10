@@ -1,10 +1,14 @@
 cmake_minimum_required(VERSION 3.16)
 project(learncuda)
-
 set(CMAKE_CXX_STANDARD 17)
+set ( CMAKE_FIND_DEBUG_MODE TRUE )
 
 find_package(CUDA REQUIRED)
 FIND_PACKAGE(OpenMP REQUIRED)
+find_package(glm  REQUIRED)
+find_package(Eigen3 REQUIRED)
+
+# message(${CMAKE_MODULE_PATH}"")
 if(OpenMP_FOUND)
  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
  Message(${OpenMP_CXX_FLAGS})
@@ -19,4 +23,5 @@ include_directories(include)
 # add_subdirectory(SharedMemory)
 # add_subdirectory(ConstantMemory)
 # add_subdirectory(WarpDataSharing-Shift)
-add_subdirectory(Stream)
+# add_subdirectory(Stream)
+add_subdirectory(Instructions)
