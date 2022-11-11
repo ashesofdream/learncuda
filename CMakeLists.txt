@@ -7,6 +7,9 @@ find_package(CUDA REQUIRED)
 FIND_PACKAGE(OpenMP REQUIRED)
 find_package(glm  REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(glad CONFIG REQUIRED)
+find_path(STB_INCLUDE_DIRS "stb_c_lexer.h")
+
 
 # message(${CMAKE_MODULE_PATH}"")
 if(OpenMP_FOUND)
