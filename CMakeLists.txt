@@ -3,6 +3,12 @@ project(learncuda)
 set(CMAKE_CXX_STANDARD 17)
 set ( CMAKE_FIND_DEBUG_MODE TRUE )
 
+if(CMAKE_HOST_SYSTEM_NAME MATCHES "Linux")
+    add_definitions(-DLinux)
+elseif(CMAKE_HOST_SYSTEM_NAME MATCHES "Windows")
+    add_definitions(-DWindows)
+endif()
+
 find_package(CUDA REQUIRED)
 FIND_PACKAGE(OpenMP REQUIRED)
 find_package(glm  REQUIRED)

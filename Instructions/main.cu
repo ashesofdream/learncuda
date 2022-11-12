@@ -61,29 +61,37 @@ int main(){
     vector<glm::vec3> pos(bodys_num*3,glm::vec3(0.f));
     
     auto window = util::prepare_window();
-    // unsigned int pos_vbo;
-    // glGenBuffers(1,&pos_vbo);
-    // glBindBuffer(GL_ARRAY_BUFFER,pos_vbo);
-    // glBufferData(GL_ARRAY_BUFFER,sizeof(glm::vec3)*bodys_num,nullptr,GL_DYNAMIC_DRAW);
-    // glBindBuffer(GL_ARRAY_BUFFER,0);
+    
     unsigned int model_uniform_buffer;
-    glGenBuffers(1,&model_uniform_buffer);
-    glBindBuffer(GL_UNIFORM_BUFFER,model_uniform_buffer);
-    glBufferData(GL_UNIFORM_BUFFER,sizeof(glm::mat4)*bodys_num,nullptr,GL_DYNAMIC_DRAW);
-    glBindBuffer(GL_UNIFORM_BUFFER,0);
-    
-    cudaGraphicsResource_t  model_uniform_cuda_resource;
-    cudaGraphicsGLRegisterBuffer(&model_uniform_cuda_resource,model_uniform_buffer,cudaGraphicsMapFlagsWriteDiscard);
-    
-    for(auto& stream :streams){
-        cudaStreamCreate(&stream);
-    }
+    // glGenBuffers(1,&model_uniform_buffer);
+    // glBindBuffer(GL_UNIFORM_BUFFER,model_uniform_buffer);
+    // glBufferData(GL_UNIFORM_BUFFER,sizeof(glm::mat4)*bodys_num,nullptr,GL_DYNAMIC_DRAW);
+    // glBindBuffer(GL_ARRAY_BUFFER,0);
+
+    // cudaSetDevice(0);
+    // cudaGraphicsResource*  model_uniform_cuda_resource;
+    // CHECK(cudaGraphicsGLRegisterBuffer(&model_uniform_cuda_resource,model_uniform_buffer,cudaGraphicsRegisterFlagsNone));
+    GLuint positionsVBO;
+    struct cudaGraphicsResource* model_uniform_cuda_resource;
+    glGenBuffers(1, &positionsVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, positionsVBO);
+    unsigned int size =  4 * sizeof(float);
+    glBufferData(GL_ARRAY_BUFFER, size, 0, GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    CHECK(cudaGraphicsGLRegisterBuffer(&model_uniform_cuda_resource,
+                                 positionsVBO,
+                                 cudaGraphicsMapFlagsWriteDiscard));
+
+
+    //     cudaStreamCreate(&stream);
+    // }
     //TODO: finish shader
-    Shader shader("","");
+    
+    Shader shader("shaders/sphere.vs.glsl","shaders/sphere.fs.glsl");
     cudaMalloc(&body_dev_pointers,sizeof(Body)*bodys_num);
     auto sphere_model  = util::draw_sphere(32,32);
     while(!glfwWindowShouldClose(window)){
-        cudaGraphicsMapResources(1,&model_uniform_cuda_resource,0);
+        CHECK(cudaGraphicsMapResources(1,&model_uniform_cuda_resource,0));
         void * cuda_model_matrix_array;
         size_t cuda_model_matrix_array_size;
         cudaGraphicsResourceGetMappedPointer(&cuda_model_matrix_array,&cuda_model_matrix_array_size,model_uniform_cuda_resource);

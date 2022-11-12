@@ -1,0 +1,14 @@
+{
+    "clangd.path": "/home/hstrt/.vscode-server/data/User/globalStorage/llvm-vs-code-extensions.vscode-clangd/install/15.0.3/clangd_15.0.3/bin/clangd",
+    "cmake.generator": "Ninja",
+    "cmake.additionalKits": [
+        "/home/hstrt/vcpkg/scripts/buildsystems/vcpkg.cmake"
+    ],
+    "cmake.configureSettings": {
+        "CMAKE_TOOLCHAIN_FILE": "/home/hstrt/vcpkg/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "x64-linux"
+    },
+    "clangd.arguments": [
+        "-header-insertion=never"
+    ]
+}

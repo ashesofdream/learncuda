@@ -1,4 +1,4 @@
-#include "util.h"
+#include "gl_util.h"
 #include "MeshSurface.h"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -15,20 +15,29 @@
 #include <memory>
 using namespace std;
 GLFWwindow* util::prepare_window() {
-    glfwInit();
+    if(!glfwInit()){
+        cout<<"glfw init fail"<<endl;
+        exit(0);
+    };
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHintString(GLFW_X11_CLASS_NAME,"X11_CLASS");
+    glfwWindowHintString(GLFW_X11_INSTANCE_NAME , "X11_INSTANCE");
     //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
     GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
     if (window == NULL) {
         std::cout << "failed to create window" << std::endl;
+        const char* description;
+        int code = glfwGetError(&description);
+        cout<<code<<endl;
+        if (code!=GLFW_NO_ERROR)cout<<"error code:"<<code<<" description:"<<description<<endl;
         glfwTerminate();
         return NULL;
     }
     glfwMakeContextCurrent(window);
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         std::cout << "failed to inti GLAD" << std::endl;
         return NULL;
     }
@@ -126,9 +135,13 @@ unsigned int util::texture_from_file(const char *filename, const char *directory
         throw runtime_error("File does not exists");
     }
     int buff_len = full_path.string().size()*3+1;
-    auto buff = make_unique<char[]>(buff_len);;
+#ifdef Windows
+    auto buff = make_unique<char[]>(buff_len);
     stbi_convert_wchar_to_utf8(buff.get(),buff_len,full_path.c_str());
     auto texture_data = stbi_load(buff.get(),&width,&height,&channels,0);
+#else
+    auto texture_data = stbi_load(full_path.c_str(), &width, &height, &channels, 0);
+#endif
     if(texture_data == nullptr) throw  std::runtime_error("Could not load texture from"s+full_path.string());
 
     unsigned  int texture_id = 0;
